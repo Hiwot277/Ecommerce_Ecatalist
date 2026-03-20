@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — eCatalist</title>
+  <meta name="description" content="Learn about eCatalist and our mission to bring premium wellness supplements to everyone.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container navbar-main">
+      <a href="index.html" class="navbar-logo">
+        <div class="navbar-logo-icon" id="nav-leaf-icon"></div>
+        <span class="navbar-logo-text">eCatalist</span>
+      </a>
+      <nav class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="about.html" class="active">About</a>
+      </nav>
+      <div class="navbar-actions">
+        <button class="cart-btn" onclick="openCart()">
+          <span id="nav-cart-icon"></span>
+          <span class="cart-badge hidden" id="cart-badge">0</span>
+        </button>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+          <span id="mobile-menu-icon"></span>
+        </button>
+      </div>
+    </div>
+    <div class="navbar-sub">
+      <div class="container navbar-sub-inner" id="sub-nav"></div>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="about.html" class="active">About</a>
+    </div>
+  </header>
+
+  <!-- About Hero -->
+  <section class="about-hero">
+    <div class="container">
+      <h1>About eCatalist</h1>
+      <p>We believe that wellness should be simple, accessible, and rooted in nature. eCatalist was founded to bring premium-quality dietary supplements to everyone — helping you live well into your advanced years, naturally.</p>
+    </div>
+  </section>
+
+  <!-- Values -->
+  <section>
+    <div class="container">
+      <div class="values-grid" id="values-grid"></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-logo">
+            <div class="footer-logo-icon" id="footer-leaf-icon"></div>
+            <span class="footer-logo-text">eCatalist</span>
+          </div>
+          <p>Premium wellness supplements crafted with nature's finest ingredients. Living well, naturally.</p>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <div class="footer-links">
+            <a href="products.html">All Products</a>
+            <a href="about.html">About Us</a>
+          </div>
+        </div>
+        <div>
+          <h4>Support</h4>
+          <div class="footer-links">
+            <span>support@ecatalist.com</span>
+            <span>1-800-ECATALIST</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 eCatalist. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <!-- Cart Drawer -->
+  <div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+  <div class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button class="cart-close" onclick="closeCart()"><span id="cart-close-icon"></span></button>
+    </div>
+    <div class="cart-content">
+      <div class="cart-empty">
+        <span id="cart-empty-icon"></span>
+        <p style="font-size:0.875rem">Your cart is empty</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="icons.js"></script>
+  <script src="cart.js"></script>
+  <script>
+    // Icons
+    document.getElementById('nav-leaf-icon').innerHTML = icons.leaf;
+    document.getElementById('nav-cart-icon').innerHTML = icons.cart;
+    document.getElementById('mobile-menu-icon').innerHTML = icons.menu;
+    document.getElementById('cart-close-icon').innerHTML = icons.x;
+    document.getElementById('cart-empty-icon').innerHTML = icons.shoppingBag;
+    document.getElementById('footer-leaf-icon').innerHTML = icons.leaf;
+
+    // Sub nav
+    document.getElementById('sub-nav').innerHTML = `
+      <a href="products.html" class="cat-link">All</a>
+      ${categories.map(c => `<a href="products.html?category=${c.slug}" class="cat-link">${c.name}</a>`).join('')}
+    `;
+
+    // Values
+    const valuesData = [
+      { icon: 'leaf', title: 'Natural Ingredients', desc: 'We source only the purest, plant-based ingredients from trusted suppliers worldwide.' },
+      { icon: 'shieldCheck', title: 'Science-Backed', desc: 'Every formula is developed with the guidance of nutritional scientists and wellness experts.' },
+      { icon: 'heart', title: 'Wellness First', desc: 'Our mission is to help you live your best life — naturally, sustainably, and affordably.' },
+      { icon: 'users', title: 'Community Driven', desc: 'Trusted by thousands of customers who prioritize their health and well-being every day.' },
+    ];
+    document.getElementById('values-grid').innerHTML = valuesData.map(v => `
+      <div class="value-card">
+        <div class="value-icon">${icons[v.icon]}</div>
+        <h3>${v.title}</h3>
+        <p>${v.desc}</p>
+      </div>
+    `).join('');
+
+    // Mobile menu
+    let mobileOpen = false;
+    function toggleMobileMenu() {
+      mobileOpen = !mobileOpen;
+      document.getElementById('mobile-menu').classList.toggle('open', mobileOpen);
+      document.getElementById('mobile-menu-icon').innerHTML = mobileOpen ? icons.x : icons.menu;
+    }
+  </script>
+</body>
+</html>
