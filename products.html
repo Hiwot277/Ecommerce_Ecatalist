@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products — eCatalist</title>
+  <meta name="description" content="Browse our full collection of premium wellness supplements.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container navbar-main">
+      <a href="index.html" class="navbar-logo">
+        <div class="navbar-logo-icon" id="nav-leaf-icon"></div>
+        <span class="navbar-logo-text">eCatalist</span>
+      </a>
+      <nav class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="products.html" class="active">Products</a>
+        <a href="about.html">About</a>
+      </nav>
+      <div class="navbar-actions">
+        <button class="cart-btn" onclick="openCart()">
+          <span id="nav-cart-icon"></span>
+          <span class="cart-badge hidden" id="cart-badge">0</span>
+        </button>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+          <span id="mobile-menu-icon"></span>
+        </button>
+      </div>
+    </div>
+    <div class="navbar-sub">
+      <div class="container navbar-sub-inner" id="sub-nav"></div>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="index.html">Home</a>
+      <a href="products.html" class="active">Products</a>
+      <a href="about.html">About</a>
+    </div>
+  </header>
+
+  <!-- Products Page -->
+  <main class="page-products">
+    <div class="container">
+      <h1>Our Products</h1>
+      <p class="count" id="product-count"></p>
+
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <span id="search-icon"></span>
+          <input type="text" id="search-input" placeholder="Search products...">
+        </div>
+        <button class="filter-btn" id="filter-toggle" onclick="toggleFilters()">
+          <span id="filter-icon"></span>
+          Filters
+        </button>
+      </div>
+
+      <div class="filters-panel" id="filters-panel">
+        <label>Category</label>
+        <div class="filter-chips" id="category-chips"></div>
+        <label>Tags</label>
+        <div class="filter-chips" id="tag-chips"></div>
+        <button class="clear-filters" id="clear-filters" onclick="clearAllFilters()" style="display:none">✕ Clear all filters</button>
+      </div>
+
+      <div class="products-grid" id="products-grid"></div>
+      <div class="empty-state" id="empty-state" style="display:none">
+        <p>No products found</p>
+        <p>Try adjusting your filters or search terms</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-logo">
+            <div class="footer-logo-icon" id="footer-leaf-icon"></div>
+            <span class="footer-logo-text">eCatalist</span>
+          </div>
+          <p>Premium wellness supplements crafted with nature's finest ingredients. Living well, naturally.</p>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <div class="footer-links">
+            <a href="products.html">All Products</a>
+            <a href="about.html">About Us</a>
+          </div>
+        </div>
+        <div>
+          <h4>Support</h4>
+          <div class="footer-links">
+            <span>support@ecatalist.com</span>
+            <span>1-800-ECATALIST</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 eCatalist. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <!-- Cart Drawer -->
+  <div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+  <div class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button class="cart-close" onclick="closeCart()"><span id="cart-close-icon"></span></button>
+    </div>
+    <div class="cart-content">
+      <div class="cart-empty">
+        <span id="cart-empty-icon"></span>
+        <p style="font-size:0.875rem">Your cart is empty</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="icons.js"></script>
+  <script src="cart.js"></script>
+  <script>
+    // Icons
+    document.getElementById('nav-leaf-icon').innerHTML = icons.leaf;
+    document.getElementById('nav-cart-icon').innerHTML = icons.cart;
+    document.getElementById('mobile-menu-icon').innerHTML = icons.menu;
+    document.getElementById('cart-close-icon').innerHTML = icons.x;
+    document.getElementById('cart-empty-icon').innerHTML = icons.shoppingBag;
+    document.getElementById('footer-leaf-icon').innerHTML = icons.leaf;
+    document.getElementById('search-icon').innerHTML = icons.search;
+    document.getElementById('filter-icon').innerHTML = icons.sliders;
+
+    // State
+    const params = new URLSearchParams(location.search);
+    let activeCategory = params.get('category') || 'all';
+    let activeTag = null;
+    let searchQuery = params.get('q') || '';
+    let filtersOpen = false;
+
+    document.getElementById('search-input').value = searchQuery;
+
+    // Sub nav
+    const subNav = document.getElementById('sub-nav');
+    function renderSubNav() {
+      subNav.innerHTML = `
+        <a href="products.html" class="cat-link ${activeCategory === 'all' ? 'active' : ''}">All</a>
+        ${categories.map(c => `<a href="products.html?category=${c.slug}" class="cat-link ${activeCategory === c.slug ? 'active' : ''}">${c.name}</a>`).join('')}
+        <form class="search-form" onsubmit="event.preventDefault(); const q=this.querySelector('input').value.trim(); if(q) location.href='products.html?q='+encodeURIComponent(q);">
+          ${icons.search}
+          <input type="text" placeholder="Search...">
+        </form>
+      `;
+    }
+    renderSubNav();
+
+    // Filters
+    function renderFilters() {
+      document.getElementById('category-chips').innerHTML = `
+        <button class="filter-chip ${activeCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">All</button>
+        ${categories.map(c => `<button class="filter-chip ${activeCategory === c.slug ? 'active' : ''}" onclick="setCategory('${c.slug}')">${c.name}</button>`).join('')}
+      `;
+      document.getElementById('tag-chips').innerHTML = tags.map(t => `
+        <button class="filter-chip ${activeTag === t.slug ? 'accent-active' : ''}" onclick="setTag('${t.slug}')">${t.name}</button>
+      `).join('');
+      document.getElementById('clear-filters').style.display = (activeCategory !== 'all' || activeTag) ? 'block' : 'none';
+    }
+
+    function setCategory(slug) {
+      activeCategory = slug;
+      renderFilters();
+      renderProducts();
+      renderSubNav();
+    }
+    function setTag(slug) {
+      activeTag = activeTag === slug ? null : slug;
+      renderFilters();
+      renderProducts();
+    }
+    function clearAllFilters() {
+      activeCategory = 'all';
+      activeTag = null;
+      searchQuery = '';
+      document.getElementById('search-input').value = '';
+      renderFilters();
+      renderProducts();
+      renderSubNav();
+    }
+    function toggleFilters() {
+      filtersOpen = !filtersOpen;
+      document.getElementById('filters-panel').classList.toggle('open', filtersOpen);
+      document.getElementById('filter-toggle').classList.toggle('active', filtersOpen);
+    }
+
+    // Products
+    function renderProductCard(p) {
+      const discount = p.compare_at_price ? Math.round(((p.compare_at_price - p.price) / p.compare_at_price) * 100) : 0;
+      return `
+        <div class="product-card">
+          <a href="product.html?slug=${p.slug}">
+            <div class="product-card-img">
+              <div style="text-align:center;padding:1rem">
+                <span class="name">${p.name}</span>
+                <p class="unit">${p.unit_count}</p>
+              </div>
+              ${discount > 0 ? `<span class="product-card-discount">-${discount}%</span>` : ''}
+            </div>
+          </a>
+          <div class="product-card-body">
+            <a href="product.html?slug=${p.slug}">
+              <h3>${p.name}</h3>
+              <p class="desc">${p.short_description}</p>
+            </a>
+            <div class="product-card-footer">
+              <div>
+                <span class="product-card-price">$${p.price.toFixed(2)}</span>
+                ${p.compare_at_price > p.price ? `<span class="product-card-compare">$${p.compare_at_price.toFixed(2)}</span>` : ''}
+              </div>
+              <button class="add-cart-btn" onclick="event.preventDefault(); addToCart(products.find(x=>x.id==='${p.id}'))">${icons.cart}</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderProducts() {
+      let result = products.filter(p => p.is_active);
+      if (activeCategory !== 'all') {
+        const cat = categories.find(c => c.slug === activeCategory);
+        if (cat) result = result.filter(p => p.category_id === cat.id);
+      }
+      if (activeTag) {
+        const tag = tags.find(t => t.slug === activeTag);
+        if (tag) {
+          const pids = productTags.filter(pt => pt.tag_id === tag.id).map(pt => pt.product_id);
+          result = result.filter(p => pids.includes(p.id));
+        }
+      }
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        result = result.filter(p => p.name.toLowerCase().includes(q) || p.short_description.toLowerCase().includes(q));
+      }
+      document.getElementById('product-count').textContent = result.length + ' product' + (result.length !== 1 ? 's' : '') + ' available';
+      document.getElementById('products-grid').innerHTML = result.map(renderProductCard).join('');
+      document.getElementById('products-grid').style.display = result.length ? '' : 'none';
+      document.getElementById('empty-state').style.display = result.length ? 'none' : '';
+    }
+
+    document.getElementById('search-input').addEventListener('input', e => {
+      searchQuery = e.target.value;
+      renderProducts();
+    });
+
+    renderFilters();
+    renderProducts();
+
+    // Mobile menu
+    let mobileOpen = false;
+    function toggleMobileMenu() {
+      mobileOpen = !mobileOpen;
+      document.getElementById('mobile-menu').classList.toggle('open', mobileOpen);
+      document.getElementById('mobile-menu-icon').innerHTML = mobileOpen ? icons.x : icons.menu;
+    }
+  </script>
+</body>
+</html>

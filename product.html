@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product — eCatalist</title>
+  <meta name="description" content="View product details and add to cart.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container navbar-main">
+      <a href="index.html" class="navbar-logo">
+        <div class="navbar-logo-icon" id="nav-leaf-icon"></div>
+        <span class="navbar-logo-text">eCatalist</span>
+      </a>
+      <nav class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="about.html">About</a>
+      </nav>
+      <div class="navbar-actions">
+        <button class="cart-btn" onclick="openCart()">
+          <span id="nav-cart-icon"></span>
+          <span class="cart-badge hidden" id="cart-badge">0</span>
+        </button>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+          <span id="mobile-menu-icon"></span>
+        </button>
+      </div>
+    </div>
+    <div class="navbar-sub">
+      <div class="container navbar-sub-inner" id="sub-nav"></div>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="about.html">About</a>
+    </div>
+  </header>
+
+  <main class="detail-page">
+    <div class="container" id="detail-content"></div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-logo">
+            <div class="footer-logo-icon" id="footer-leaf-icon"></div>
+            <span class="footer-logo-text">eCatalist</span>
+          </div>
+          <p>Premium wellness supplements crafted with nature's finest ingredients. Living well, naturally.</p>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <div class="footer-links">
+            <a href="products.html">All Products</a>
+            <a href="about.html">About Us</a>
+          </div>
+        </div>
+        <div>
+          <h4>Support</h4>
+          <div class="footer-links">
+            <span>support@ecatalist.com</span>
+            <span>1-800-ECATALIST</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 eCatalist. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <!-- Cart Drawer -->
+  <div class="cart-overlay" id="cart-overlay" onclick="closeCart()"></div>
+  <div class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button class="cart-close" onclick="closeCart()"><span id="cart-close-icon"></span></button>
+    </div>
+    <div class="cart-content">
+      <div class="cart-empty">
+        <span id="cart-empty-icon"></span>
+        <p style="font-size:0.875rem">Your cart is empty</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="icons.js"></script>
+  <script src="cart.js"></script>
+  <script>
+    // Icons
+    document.getElementById('nav-leaf-icon').innerHTML = icons.leaf;
+    document.getElementById('nav-cart-icon').innerHTML = icons.cart;
+    document.getElementById('mobile-menu-icon').innerHTML = icons.menu;
+    document.getElementById('cart-close-icon').innerHTML = icons.x;
+    document.getElementById('cart-empty-icon').innerHTML = icons.shoppingBag;
+    document.getElementById('footer-leaf-icon').innerHTML = icons.leaf;
+
+    // Sub nav
+    document.getElementById('sub-nav').innerHTML = `
+      <a href="products.html" class="cat-link">All</a>
+      ${categories.map(c => `<a href="products.html?category=${c.slug}" class="cat-link">${c.name}</a>`).join('')}
+    `;
+
+    // Product detail
+    const params = new URLSearchParams(location.search);
+    const slug = params.get('slug');
+    const product = getProductBySlug(slug);
+    const container = document.getElementById('detail-content');
+
+    if (!product) {
+      container.innerHTML = `
+        <div style="text-align:center;padding:5rem 0">
+          <h1>Product Not Found</h1>
+          <a href="products.html" style="color:var(--primary);font-size:0.875rem">← Back to Products</a>
+        </div>`;
+    } else {
+      document.title = product.name + ' — eCatalist';
+      const category = getCategory(product.category_id);
+      const ptags = getProductTags(product.id);
+      const certs = getProductCertifications(product.id);
+      const supplement = getProductSupplementDetails(product.id);
+      const discount = Math.round(((product.compare_at_price - product.price) / product.compare_at_price) * 100);
+
+      container.innerHTML = `
+        <a href="products.html" class="back-link">${icons.arrowLeft} Back to Products</a>
+        <div class="detail-grid">
+          <div class="detail-img">
+            <div style="text-align:center;padding:2rem">
+              <span class="name">${product.name}</span>
+              <p class="unit">${product.unit_count}</p>
+            </div>
+            ${discount > 0 ? `<span class="detail-save">Save ${discount}%</span>` : ''}
+          </div>
+          <div class="detail-info">
+            ${category ? `<a href="products.html?category=${category.slug}" class="detail-category">${category.name}</a>` : ''}
+            <h1>${product.name}</h1>
+            <p class="short-desc">${product.short_description}</p>
+            <div class="detail-price">
+              <span class="current">$${product.price.toFixed(2)}</span>
+              ${product.compare_at_price > product.price ? `<span class="compare">$${product.compare_at_price.toFixed(2)}</span>` : ''}
+            </div>
+            <button class="detail-add-btn" onclick="addToCart(products.find(x=>x.id==='${product.id}'))">
+              ${icons.cart} Add to Cart
+            </button>
+            <p class="detail-desc">${product.description}</p>
+            ${ptags.length ? `<div class="detail-tags">${ptags.map(t => `<span class="detail-tag">${t.name}</span>`).join('')}</div>` : ''}
+            ${certs.length ? `<div class="detail-certs">${certs.map(c => `<div class="detail-cert">${icons.shieldCheck} ${c.name}</div>`).join('')}</div>` : ''}
+            ${supplement ? `
+              <div class="detail-supplement">
+                <div class="supp-block info-bg">
+                  <span style="color:var(--primary)">${icons.leaf}</span>
+                  <div>
+                    <p class="supp-label">Ingredients</p>
+                    <p class="supp-text">${supplement.ingredients}</p>
+                  </div>
+                </div>
+                <div class="supp-block info-bg">
+                  <span style="color:var(--primary)">${icons.info}</span>
+                  <div>
+                    <p class="supp-label">Dosage</p>
+                    <p class="supp-text">${supplement.dosage}</p>
+                    <p class="supp-meta">${supplement.serving_size} · ${supplement.servings_per_container} servings per container</p>
+                  </div>
+                </div>
+                <div class="supp-block warn-bg">
+                  <span style="color:var(--destructive)">${icons.alertTriangle}</span>
+                  <div>
+                    <p class="supp-label">Warnings</p>
+                    <p class="supp-text">${supplement.warnings}</p>
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+            <p class="detail-sku">SKU: ${product.sku} · ${product.stock_quantity > 0 ? '<span class="in-stock">In Stock</span>' : '<span class="out-stock">Out of Stock</span>'}</p>
+          </div>
+        </div>
+      `;
+
+      // FAB
+      const fab = document.createElement('button');
+      fab.className = 'fab';
+      fab.innerHTML = icons.cart;
+      fab.onclick = () => addToCart(product);
+      document.body.appendChild(fab);
+    }
+
+    // Mobile menu
+    let mobileOpen = false;
+    function toggleMobileMenu() {
+      mobileOpen = !mobileOpen;
+      document.getElementById('mobile-menu').classList.toggle('open', mobileOpen);
+      document.getElementById('mobile-menu-icon').innerHTML = mobileOpen ? icons.x : icons.menu;
+    }
+  </script>
+</body>
+</html>
